@@ -1,0 +1,148 @@
+---
+title: "Jose_Gonzalez_HW2"
+author: "Jose Luis Gonzalez"
+date: "2/6/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+Problem 1
+
+a) Observed Information Matrix
+$$\mathbf{\nabla^2l(\mu, \sigma)} = \left[\begin{array}
+{rr}
+\frac{n}{\sigma^2} & \frac{2(\sum{i=1}^{n} (x_i - \mu))}{\sigma^3}        \\
+\frac{2(\sum{i=1}^{n} (x_i - \mu))}{\sigma^3} & -\frac{n}{\sigma^2} + \frac{3(\sum{i = 1}^{n} (x_i - \mu)^2)}{\sigma^4}         \\
+\end{array}\right]
+$$
+b) 
+Fisher Information Matrix
+$$\mathbf{I(\mu, \sigma)} = \left[\begin{array}
+{rr}
+\frac{n}{\sigma^2} & 0 \\
+0 & \frac{2n}{\sigma^2}
+\end{array}\right]
+$$
+c)
+Inverse of Fisher Information Matirx
+$$\mathbf{I^{-1}(\mu, \sigma)} = \left[\begin{array}
+{rr}
+\frac{\sigma^2}{n} & 0 \\
+0 & \frac{\sigma^2}{2n} \\
+\end{array}\right]
+$$
+Covarience Matrix of Transformed Function
+$$ \mathbf{JI^{-1}J^{T}} = \left[\begin{array}
+{rr}
+\frac{\sigma^2}{n} & 0 \\
+0 & \frac{2\sigma^4}{n}
+\end{array}\right]
+$$
+Fisher Information Matrix 
+$$ \mathbf{I(\mu,\sigma^2)} = \mathbf{(JI^{-1}J^{t})^{-1}} = \left[\begin{array}
+{rr}
+\frac{n}{\sigma^2} & 0 \\
+0 & \frac{n}{2\sigma^4}
+\end{array}\right]
+$$
+d) 
+Standard Errors 
+ 
+$$ SE_{\mu} = \sqrt\frac{n}{\sigma^2} , SE_{\sigma} = \sqrt\frac{2n}{\sigma^2} , SE_{\sigma^2} = \sqrt\frac{n}{2\sigma^4} $$
+
+
+```{r}
+
+# Problem 2
+# a) 
+
+tri_sim <- function(n_sim, n, p1, p2, p3) {
+  tri <- t(rmultinom(n = n_sim, size = n, c(p1, p2, p3)))
+  M <<- (1/n)*(tri) # produces MLE's
+}
+
+# b) 
+
+tri_sim(n_sim = 10000, n = 200, p1 = .25, p2 = .25, p3 = .5)
+
+head(M, n=5) # Prints out first five simulations of MLE's
+
+# c)
+# Creates matrix of theoretical values for MLE's, given the formula found in class. 
+tri_theory <- function(n, p1, p2, p3){
+  p <<- c(p1,p2,p3)
+  cov_theory <<- matrix(0, nrow = 3, ncol = 3)
+  for(i in 1:3){
+    for(j in 1:3){
+      if(i == j){
+        
+        cov_theory[i,j] <<- (1/n)*p[i]*(1-p[j])
+      
+        } else {
+        cov_theory[i,j] <<- -(1/n)*p[i]*p[j]
+      }
+    }
+  }
+}
+
+tri_theory(n = 200, p1 = .25, p2 = .25, p3 = .5)
+print(cov_theory)
+
+# d)
+# Creates the covarience matrix for simulated results. 
+
+tri_sim(n_sim = 10000, n = 200, p1 = .25, p2 = .25, p3 = .5)
+cov_actual <- cov(M)
+actual <- cov_actual[which(lower.tri(cov_actual, diag = TRUE))]
+theory <- cov_theory[which(lower.tri(cov_theory, diag =TRUE))]
+abs_diff <- abs(actual - theory)
+
+# Creates a table with actual values, theoretical values, and their absolute difference 
+# could be compared side by side. Each row respresents a value from their respective covarience
+# matrix and are named after their indexed position in that matrix. 
+table_cov <- matrix(c(theory, actual, abs_diff), byrow=FALSE, nrow = 6, ncol = 3)
+colnames(table_cov) <- c("Theoretical", "Actual", "Absolute Difference")
+rownames(table_cov) <- c("S11", "S12","S13", "S22", "S23", "S33")
+table_cov
+
+# e)
+# Creates the covarience matrix for a new set of simulated results, with 100,000 simulations.
+tri_sim(n_sim = 100000, n = 200, p1 = .25, p2 = .25, p3 = .5)
+cov_actual <- cov(M)
+actual <- cov_actual[which(lower.tri(cov_actual, diag = TRUE))]
+theory <- cov_theory[which(lower.tri(cov_theory, diag =TRUE))]
+abs_diff <- abs(actual - theory)
+
+
+table_cov <- matrix(c(theory, actual, abs_diff), byrow=FALSE, nrow = 6, ncol = 3)
+colnames(table_cov) <- c("Theoretical", "Actual", "Absolute Difference")
+rownames(table_cov) <- c("S11", "S12","S13", "S22", "S23", "S33")
+table_cov
+
+# The difference between the simulated and theoretical values of the covarience matrix of M 
+#do not change drastically when the number of simulations is altered from 10,000 to 100,000. 
+#Many of the approximations become more accurate by a significant figure, however it appears 
+#that 10,000 simulations would suffice for a accuarte representation of the theoretical values. 
+#The improved accuracy as n_sim was increased from 10,000 to 100,000 does provide evidence for
+#the variaance of the parameter approximately equaling its corresponding element in the inverse 
+#fisher information matrix (the covarience matrix). 
+
+# f)
+# Histogram of each column vector in M, for 100,000 simulations
+par(mfrow = c(1,2))
+hist(M[,1], main = "Distribution of MLEs of P1", xlab = "Sample P1 MLEs")
+hist(M[,2], main = "Distribution of MLEs of P2", xlab = "Sample P2 MLEs")
+hist(M[,3], main = "Distribution of MLEs of P3", xlab = "Sample P3 MLEs")
+
+# The histgrams above and below clearly illustrate the nature of the distribution of the MLE's as
+# n_sim becomes large. That is, they are normally distributed with mean of P_i-hat (MLE of P_i) and 
+# variances/covariences from the inverse of the fisher information matrix.
+```
+
+
