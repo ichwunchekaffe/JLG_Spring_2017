@@ -1,0 +1,273 @@
+---
+title: "Jose_Gonzalez_hw1_535"
+author: "Jose Luis Gonzalez"
+date: "2/7/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+
+```{r}
+# Jose Luis Gonzalez HW_1
+# Chapter 1
+# Problem 3
+# a)
+# fix the sensitivity and specificity as given in Example 1.4 but 
+#vary the population disease prevalence from 1% to 10% in increments of 1%;
+
+prev_pos <- function(sen, spec, prev_0, prev_1, inc){
+   p <-  seq(prev_0, prev_1, by=inc)
+   len <- length(p)
+   res <- matrix(0, nrow = len, byrow = TRUE)
+   colnames(res) <- c("Postive Predictive-Prev")
+   rownames(res) <- p
+  for( i in 1:len){
+    res[i,1] <- (sen*prev_0)/(sen*prev_0 + (1-spec)*(1-prev_0))
+    prev_0 <- prev_0 + inc
+  }
+   
+   print(res)
+   print(change <- abs(res[1,1]-res[len,1]))
+}
+
+prev_pos(.99, .91, .01,.10, .01)
+
+prev_neg <- function(sen, spec, prev_0, prev_1, inc){
+  p <-  seq(prev_0, prev_1, by=inc)
+  len <- length(p) 
+  res <- matrix(0, nrow = len, byrow = TRUE)
+  colnames(res) <- c("Negative Predictive-Prev")
+  rownames(res) <- p
+  for( i in 1:len){
+    res[i,1] <- (spec*(1-prev_0))/(spec*(1-prev_0) + (1-sen)*prev_0)
+    prev_0 <- prev_0 + inc
+    }
+  
+  print(res)
+  print(change <- abs(res[1,1]-res[len,1]))
+}
+
+prev_neg(.99, .91, .01,.10, .01)
+# b) 
+#fix the population disease prevalence and specificity as given in Example 1.4 but 
+#vary the sensitivity from 80% to 98% in increments of 2%; 
+
+sen_pos <- function(prev, spec, sen_0, sen_1, inc){
+  p <- seq(sen_0, sen_1, by=inc)
+  len <- length(p)
+  res <- matrix(0, ncol=1, nrow = len)
+  colnames(res) <- c("Postive Predictive-Sen")
+  rownames(res) <- p
+  for( i in 1:len){
+    res[i,1] <- (sen_0*prev)/(sen_0*prev + (1-spec)*(1-prev))
+    sen_0 <- sen_0 + inc
+  }
+  
+  print(res)
+  print(change <- abs(res[1,1]-res[len,1]))
+}
+
+sen_pos(.02, .91, .80,.98, .02)
+
+sen_neg <- function(prev, spec, sen_0, sen_1, inc){
+  p <- seq(sen_0, sen_1, by=inc)
+  len <- length(p)
+  res <- matrix(0, nrow = len, byrow = TRUE)
+  colnames(res) <- c("Negative Predictive-Sen")
+  rownames(res) <- seq(sen_0, sen_1, by=inc)
+  for( i in 1:len){
+    res[i,1] <- (spec*(1-prev))/(spec*(1-prev) + (1-sen_0)*prev)
+    sen_0 <- sen_0 + inc
+  }
+  
+  print(res)
+  print(change <- abs(res[1,1]-res[len,1]))
+}
+
+sen_neg(.02, .91, .80,.98, .02)
+
+# c)
+# fix the population disease prevalence and sensitivity as given in Example 1.4 but
+# vary the specificity from 80% to 98% in increments of 2%.
+
+spec_pos <- function(prev, sen, spec_0, spec_1, inc){
+  p <- seq(spec_0, spec_1, by=inc)
+  len <- length(p)
+  res <- matrix(0, ncol=1, nrow = len)
+  colnames(res) <- c("Postive Predictive-Spec")
+  rownames(res) <- p
+  for( i in 1:len){
+    res[i,1] <- (sen*prev)/(sen*prev + (1-spec_0)*(1-prev))
+    spec_0 <- spec_0 + inc
+  }
+  
+  print(res)
+  print(change_inc <- abs(res[1,1]-res[len,1]))
+}
+
+spec_pos(.02, .99, .80,.98, .02)
+
+sen_neg <- function(prev, sen, spec_0, spec_1, inc){
+  p <- seq(spec_0, spec_1, by=inc)
+  len <- length(p)
+  res <- matrix(0, nrow = len, byrow = TRUE)
+  colnames(res) <- c("Negative Predictive-Spec")
+  rownames(res) <- seq(spec_0, spec_1, by=inc)
+  for( i in 1:len){
+    res[i,1] <- (spec_0*(1-prev))/(spec_0*(1-prev) + (1-sen)*prev)
+    spec_0 <- spec_0 + inc
+  }
+  
+  print(res)
+  print(change <- abs(res[1,1]-res[len,1]))
+}
+
+sen_neg(.02, .99, .80,.98, .02)
+
+# d) From your calculations in parts (a) – (c), which property appears to affect 
+# predictive value positive the most? What about predictive value negative?
+
+#It is clear that a change in prevalance affects the output of predictive vaue the most,
+#which is also seen in the construction of the formula (Given that it is a scalar factor 
+#in the formula). Although specificity has a similarly large affect on PV positive, prevalence
+#has an even larger affect(0.45 vs .41, change in prev_pos and spec pos respectively)
+#with a smaller range of values (10 vs 18 percentage points , prev_pos and spec pos respectively).
+#The most impactful variable for predictive value negative is not so clear, however, 
+#it appears that sensitivity is the only variable that has significant effect, .004.
+
+#4. In Example 1.11, use a normal approximation to the Poisson distribution to esti-
+#mate Pr(X >=6) and compare your answer to the exact result in the example.
+#mean = 3, because 1-ppois(5, lambda =3), because its discrete and < we need continutity correction 
+#of (.5), 5.5 Normal Approx to Poisson
+
+z_score <- (5.5 - 3)/sqrt(3)
+1-pnorm(q = z_score, mean = 0, sd = 1)
+# Actual Poisson Prob
+1-ppois(5,3)
+
+# The approximation is relatively close up to the second significant figure. 
+
+# Chapter 3
+# 1. Write a program to
+# (a) produce 5000 independent Bernoulli trials with p = 0.1.
+prop_binom <- function(N,p){
+vec <- rbinom(N,1,p)
+prop <- rep(0,N)
+for(i in 1:N){
+  prop[i] <- sum(vec[0:i])/i
+}
+x <- seq(1,N, by = 1)
+plot(x = x , y =prop, type = "n", pch= 20, ylim = c(0, 2*p), xlab = "Number of Trials", 
+     ylab = "Proportion of Successes",
+     main = paste("Proportion of Successes by the Number of Trials for", N, "Bernoulli Trials"))
+lines(x = x, y = prop)
+abline(p, 0, col = "red")
+}
+
+prop_binom(5000, .1)
+
+# c) What would the standard error of the mean of p be in this problem?
+# X ~ b(1,p) -> E(X) = P, Var(X) = p(1-p) SE(X_bar) = sqrt(Var(X_bar)) = sqrt((p(1-p))/n)
+
+se <- sqrt(((.1)*(1-.1))/5000)
+
+# 2) Write a program to produce the mean values for
+# a) 150 samples, which each have a sample size of n = 20 and are from a t- distribution with 2 
+# degrees of freedom
+
+t_mean <- function(N, n, df){
+  vec <- rep(0,N)
+  for( i in 1:N){
+  vec[i] <- mean(rt(n = 5, df = 2))
+  }
+  print(vec)
+}
+
+t_5 <- t_mean(N = 150, n = 5, df = 2)
+# b)
+t_20 <- t_mean(N = 150, n = 20, df = 2)
+
+#c)
+t_50 <- t_mean(N = 150, n = 50, df = 2)
+
+list_t <- list(t_5, t_20,t_50)
+names(list_t) <- c("n = 5", "n = 20", "n = 50")
+#d) 
+#For the three resultant samples of 150 created in parts (a) – (c), calculate the mean, 
+#standard deviation, and quartiles of your distributions. Also, for each case, produce 
+#a histogram of the distribution of 150 mean values.
+t_str <- function(list){
+  str <- matrix(0, nrow = length(list), ncol =5)
+  rownames(str) <- names(list_t)
+  colnames(str) <- c("Mean", "Standard Deviation", "25%", "50%", "75%") 
+  par(mfrow=c(1,1))
+  for(i in 1:length(list)){
+    str[i,] <- c(mean(list[[i]]), sd(list[[i]]),quantile(list[[i]],.25, names = F),
+                 quantile(list[[i]],.5, names = F), quantile(list[[i]],.75, names = F))
+    hist(list[[i]], main = paste("Distribution of Means of T-Dist Values with 2 df and",
+                                 names(list_t[i])), xlab = "Sample Mean of T-Scores", breaks = 20)
+  }
+  print(str)
+}
+
+t_str(list_t)
+# e) Does the central limit theorem appear to hold for a t-distribution with 2 degrees 
+#of freedom? Yes, as the sample size increases, the distribution of sample means tend 
+# to become normally distributed with mean =0,standard deviation = 1. 
+
+# 3) 
+# Write a program to produce a distribution of median values of
+
+#(a) 150 samples, which each have a sample size equal to 10, and are from an expo-
+#  nential distribution with lambda = 1; 
+
+exp_med <- function(N, n, r){
+  vec <- rep(0, N)
+  for(i in 1:N){
+  vec[i] <- median(rexp(n = n, rate = r))
+  }
+  print(vec)
+}
+
+exp_10 <- exp_med(N = 150, n = 10, r = 1)
+
+# (b) 150 samples, which each have a sample size equal to 50, and are from an expo-
+# nential distribution with  lambda =1;
+
+exp_50 <- exp_med(N = 150, n = 50, r = 1)
+
+# c) For the two resultant distributions created in a) and b), calculate the mean, 
+# standard deviation, and the quartiles of your distributions. Also for each case
+# produce a histogram of the distribution of 150 median values.
+
+list_exp <- list(exp_10, exp_50)
+names(list_exp) <- c("n = 10", "n = 50")
+exp_str <- function(list){
+  str <- matrix(0, nrow= length(list), ncol = 5)
+  rownames(str) <- names(list)
+  colnames(str) <- c("Mean", "Standard Deviation", "25%", "50%", "75%") 
+  par(mfrow = c(1,1))
+  for(i in 1:length(list)){
+    str[i,] <- c(mean(list[[i]]), sd(list[[i]]),quantile(list[[i]],.25, names = F),
+                 quantile(list[[i]],.5, names = F), quantile(list[[i]],.75, names = F))
+    hist(list[[i]], main = paste("Distribution of Medians of Exp-Dist Values with rate = 1 and",
+                      names(list_t[i])), xlab = "Sample Median of Exp-Dist Values", breaks = 20)
+  }  
+  print(str)
+}
+
+exp_str(list = list_exp)
+
+# The distribution of the medians of an exponential distribution does apear to 
+# converge to a normal distribution. However, its mean is converging to .70 instead of 0, and its 
+# standard deviation is converging to .13 or lower instead of 1. However, the shape of the distribution 
+# is taking on a normal bell shape. 
+
+```
+
