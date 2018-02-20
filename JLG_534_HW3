@@ -1,0 +1,280 @@
+---
+title: "Jose_Gonzalez_hw3"
+author: "Jose Luis Gonzalez"
+date: "2/13/2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#Problem 1
+```{r}
+# (a) Secant Method 
+# Gradient 
+grad <- function(x,t){
+  # x = c(x1, x2, x3, x4)
+dl = x[1]/(2+t) - (x[2] + x[3])/(1 - t) + x[4]/t
+}
+
+# Secant Method
+maxit <- 20 # Max number of iterations
+x = c(1997, 907, 904, 32)
+# t0 = t^(n-1) t1 =t^(n)
+
+sec <- function(maxit, x, t0, t1, tolgrad, tollerr){
+  # Creates empty matrix to input iteration values
+  values <- matrix(NA, nrow  = maxit, ncol = 4,
+                   dimnames = list(rep("",maxit),c("IT","T(n)","MRE", "dl(T(n))")))
+  count <- 0
+  tol <- TRUE
+  while(maxit > 0 && tol == TRUE) {
+  count <- count + 1 # counts the number of iterations 
+  dl_0 <- grad(x,t0)
+  dl_1 <- grad(x,t1)
+  t_new <-  t1 - dl_1*(t1-t0)/(dl_1-dl_0) 
+  mre <- abs(t1-t0)/max(1,abs(t1)) # Modified Relative Error
+  
+  values[count,] <- c(format(count, digits = 0), formatC(t1,digits = 12, format = "f"),
+                      format(x = mre,scientific = TRUE, digits = 2),
+                      format(x = dl_1, scientific = TRUE, digits = 2))
+  
+  # reassign t0, t1
+  t0 = t1
+  t1 = t_new
+  maxit <- maxit - 1 # updates the number of iterations left to perform
+  
+  # Check if tolgrad and tollerr conditions were met
+  if(dl_1 < tolgrad && mre < tollerr){
+    tol <- FALSE # If both conditions are met, tol <- FALSE breaks the while loop 
+  }else{}
+  }
+print(values[1:count,], quote = FALSE) # Prints Matrix of Iteration Outputs
+}
+
+# (b)
+# Running sec with t0 =.02, t1=.01, tolerr = 1e-6, and tolgrad = 1e-9
+sec(maxit = maxit,x = x,t0 = .02,t1 = .01,tolgrad = 1e-9, tollerr = 1e-6)
+
+# (c)
+
+
+sec_c <- function(maxit, x, t0, t1, tolgrad, tollerr){
+  # Creates empty matrix to input iteration values
+  values <- matrix(NA, nrow  = maxit, ncol = 4, 
+                   dimnames = list(rep("",maxit),c("IT","T(n)", "Const. Conv.", "Sig.Digits")))
+  count <- 0
+  tol <- TRUE
+  tstar <- (-1657 + sqrt(3728689))/7680
+  while(maxit > 0 && tol == TRUE) {
+    count <- count + 1 # counts the number of iterations 
+    dl_0 <- grad(x,t0)
+    dl_1 <- grad(x,t1)
+    t_new <-  t1 - dl_1*(t1-t0)/(dl_1-dl_0)
+    mre <- abs(t1-t0)/max(1,abs(t1))
+    con_cov <- abs(t1 - tstar)/abs(t0 - tstar)
+    sigdig <- -log10(abs(t1 - tstar)/abs(tstar))
+    # replace values in matrix 
+    
+    values[count,] <- c(format(count, digits = 0), formatC(t1,digits = 12, format = "f"),
+                        format(x = con_cov,scientific = TRUE, digits = 2),
+                        format(x = sigdig, digits = 2))
+    
+    # reassign t0, t1
+    t0 = t1
+    t1 = t_new
+    maxit <- maxit - 1 # updates the number of iterations left to perform
+    
+    # Check if tolgrad and tollerr conditions were met
+    if(dl_1 < tolgrad && mre < tollerr){
+      tol <- FALSE # If both conditions are met, tol <- FALSE  breaks the while loop
+    }else{}
+  }
+  print(values[1:count,], quote = FALSE) # Prints Matrix of Iteration Outputs
+}
+
+
+sec_c(maxit = maxit,x = x,t0 = .02,t1 = .01,tolgrad = 1e-9, tollerr = 1e-6)
+```
+
+Based on the constant of convergance from part c) it appears that the secant method is super linearly convergant as the constant of convergance, abs(t1 - tstar)/abs(t0 - tstar),
+converges to 0. At the 9th iteration, the constant of convergence is 8.8e-06, which is approximately 0. 
+
+```{r}
+
+
+# e)
+
+sec_c(maxit = maxit,x = x,t0 = .5,t1 = .01,tolgrad = 1e-9, tollerr = 1e-6)
+```
+The secant method does not converge given t0 = .5, t1 = .01. This is because the secant line of the inital points lead to a new t1 and t0 set of points
+with a flat secant line that produces a negative values as its solution. As the iterations continue, the solutions become more negative as they 
+are following the asymptote on the negative side. 
+
+
+
+
+
+
+
+
+
+# Problem 2
+
+```{r}
+x <- c(3.91, 4.85, 2.28, 4.06, 3.70, 4.04, 5.46, 3.53, 2.28, 1.96, 2.53, 3.88,
+       2.22, 3.47, 4.82, 2.46, 2.99, 2.54, 0.52, 2.50)
+theta <- seq(-pi, pi, by =.01)
+like <- function (x, theta) {
+  log_plot <- rep(0,length(theta))
+  sum_log <- rep(0, length(x))
+  for(i in 1:length(theta)){
+    for(j in 1:length(x)){
+   sum_log[j] <- log(1-cos(x[j]-theta[i])) -log(2*pi)
+    }
+    log_plot[i] <- sum(sum_log)
+  }
+  plot(x = theta, y = log_plot, type = 'l', xlab = "Theta", ylab = "l(Theta)")
+}
+
+like(x = x, theta = theta)
+
+# b) Method of Moments Estimator
+x <- c(3.91, 4.85, 2.28, 4.06, 3.70, 4.04, 5.46, 3.53, 2.28, 1.96, 2.53, 3.88,
+       2.22, 3.47, 4.82, 2.46, 2.99, 2.54, 0.52, 2.50)
+x_bar <- mean(x)
+theta0 <- asin(x_bar - pi)
+
+print(paste("The method of moments estimator is", theta0))
+
+# (c) Find the MLE using Newtons Method and theta0 as starting point
+
+# Gradient
+grad <- function(x,t){
+  grad_val <- rep(0,length(t))
+  sum_grad <- rep(0,length(x))
+  for(i in 1:length(t)){
+    for(j in 1:length(x)){
+      sum_grad[j] <- -sin(x[j] - t[i])/(1-cos(x[j] - t[i]))
+    }
+    grad_val[i] <- sum(sum_grad)
+  }
+  return(grad_val)
+}
+
+
+# Hessian
+
+hess <- function(x,t){
+  hess_val <- rep(0, length(t))
+  sum_hess <- rep(0, length(x))
+  for(i in 1:length(t)){
+    for(j in 1:length(x)){
+      sum_hess[j] <- (cos(x[j] - t[i])*(1-cos(x[j] - t[i])) - 
+                        (sin(x[j] - t[i]))^2)/(1 - cos(x[j] - t[i]))^2
+    }
+    hess_val[i] <- sum(sum_hess)
+  }
+  return(hess_val)
+}
+
+# Newton's Method
+newt <- function(maxit, x, t, tolgrad, tollerr){
+  values <- matrix(0, ncol = 4, nrow = maxit, 
+                   dimnames = list(rep("", maxit), c("IT", "T(n)", "MRE", "dl(T(n))")))
+  count <- 0
+  tol <- TRUE
+  while(maxit > 0 && tol == TRUE) {
+  count <- count + 1
+  grad_val <- grad(x,t) 
+  hess_val <- hess(x,t)
+  t_new <- t - grad_val/hess_val
+  mre <- abs(t_new - t)/max(1,abs(t_new))
+  # Matrix
+  values[count,] <- c(format(count, digits = 0), formatC(t,digits = 12,format = "f"), 
+                      format(x = mre, scientific = TRUE, digits = 2), 
+                      format(x = grad_val, scientific = TRUE, digits = 2))
+  
+  # Reassign
+  t <- t_new
+  maxit <- maxit - 1
+  # Check if tolgrad and tollerr conditions were met
+  if(grad_val < tolgrad && mre < tollerr){
+    tol <- FALSE # If both conditions are met, tol <- FALSE breaks the while loop 
+  }else{}
+  }
+  print(values[1:count,], quote = FALSE) # Prints Matrix of Iteration Outputs
+}
+
+# MME = theta0 
+newt(maxit = 20, x = x, t = theta0 , tolgrad = 10^(-9), tollerr = 10^(-6))
+
+# Solutions given t0 = -2.7, t0 = 2.7, respectively 
+newt(maxit = 20, x = x, t = -2.7 , tolgrad = 10^(-9), tollerr = 10^(-6))
+
+newt(maxit = 20, x = x, t = 2.7 , tolgrad = 10^(-9), tollerr = 10^(-6))
+
+
+# d)
+# Newton's Method 200 graphically
+newt_graph <- function(maxit, x, t, tolgrad, tollerr){
+  value_graph <- matrix(0, nrow = length(t), ncol = 2)
+  for ( i in 1:length(t)){
+  values <- matrix(0, ncol = 4, nrow = maxit, 
+                   dimnames = list(rep("", maxit), c("IT", "T(n)", "MRE", "dl(T(n))")))
+  count <- 0
+  tol <- TRUE
+  t0 <- t[i]
+  max <- maxit
+  while(max > 0 && tol == TRUE) {
+    count <- count + 1
+    grad_val <- grad(x,t0) 
+    hess_val <- hess(x,t0)
+    t_new <- t0 - grad_val/hess_val
+    mre <- abs(t_new - t0)/max(1,abs(t_new))
+    # Matrix
+    values[count,] <- c(format(count, digits = 0), formatC(t0,digits = 12, format = "f"), 
+                        format(x = mre, scientific = TRUE, digits = 2), 
+                        format(x = grad_val, scientific = TRUE, digits = 2))
+    
+    # Reassign
+    t0 <- t_new
+    max <- max - 1
+    # Check if tolgrad and tollerr conditions were met
+    if(grad_val < tolgrad && mre < tollerr){
+      tol <- FALSE # If both conditions are met, tol <- FALSE breaks while loop 
+      }else{}
+  }
+  value_graph[i,] <- c(t[i], values[count,2])
+  }
+  plot(x = value_graph[,1], y = value_graph[,2], cex = .5, xlab = "Intial Theta", ylab = "Converged Theta")
+}
+
+
+
+newt_graph(maxit = 20,x = x, t = seq(-pi,pi, length.out = 200), tolgrad = 10^(-9), tollerr = 10^(-6))
+
+# Plot Gradient 
+t <- seq(-pi, pi, by = .01)
+plot(x = t, y = grad(x, t), type = "l", ylim = c(-1500, 2500))
+abline(h=0, col = "red")
+
+```
+
+There are roughly 14 sub groups of thetas that converge to single points. Once the gradient of 
+the likelihood function is plotted, it is easy to visualize the Newton's Method for this case.
+The larger sub groups correspond to the zeros that lie in long flat intervals of the gradient, while
+the smaller sub groups correspond to intervals of the gradient that have many zeros in a short span.
+Intial theta guesses will fall into one of these sub groups (since the space was partitoned), and
+will converge to its local max, hence informed selection of theta0 is key. 
+```{r}
+
+# e) The two numbers chosen are -0.836705581106829 and -0.805131785593364
+newt(maxit = 20, x = x, t = -0.836705581106829, tolgrad = 10^(-9),tollerr = 10^(-6))
+
+newt(maxit = 20, x = x, t = -0.805131785593364, tolgrad = 10^(-9),tollerr = 10^(-6))
+
+```
+
